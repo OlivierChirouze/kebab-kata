@@ -1,4 +1,4 @@
-import Application._
+import Application.{EmptyIngredient, _}
 import org.scalatest._
 
 import scala.collection.mutable
@@ -14,104 +14,192 @@ class ApplicationSpec extends FunSpec with Matchers {
         "poisson" -> Ingredient("poisson", hasFish = true)
     )
 
-    val oneKebabViande = Kebab(List(
-        ingredients("salade"),
-        ingredients("ognon"),
-        ingredients("tomate"),
-        ingredients("ognon"),
-        ingredients("viande")
-    ))
-    val oneKebabVegetable = Kebab(List(
-        ingredients("salade"),
-        ingredients("cheese"),
-        ingredients("tomate"),
-        ingredients("ognon")
-    ))
-    val oneKebabPoisson = Kebab(List(
-        ingredients("salade"),
-        ingredients("cheese"),
-        ingredients("tomate"),
-        ingredients("ognon"),
-        ingredients("cheese"),
-        ingredients("poisson"),
-        ingredients("poisson")
-    ))
+    // Initialize composite ingredients as if they were alone in the kebab (all with empty next)
+    var compositeIngredients: mutable.HashMap[String, CompositeKebab] = mutable.HashMap(
+        "tomate" -> CompositeKebab("tomate", EmptyIngredient),
+        "salade" -> CompositeKebab("salade", EmptyIngredient),
+        "ognon" -> CompositeKebab("ognon", EmptyIngredient),
+        "cheese" -> CompositeKebab("cheese", EmptyIngredient),
+        "viande" -> MeatIngredient("viande", EmptyIngredient),
+        "poisson" -> FishIngredient("poisson", EmptyIngredient)
+    )
 
-    val oneKebabViande2 =
-        CompositeKebab("salade",
-            CompositeKebab("ognon",
-                CompositeKebab("tomate",
-                    CompositeKebab("ognon",
-                        MeatIngredient("viande",
-                            EmptyIngredient
-                        )
-                    )
-                )
-            )
-        )
+    // Build a kebab from the names of the ingredients
+    private def getKebab(names: List[String]): InheritenceKebab = {
+        InheritenceKebab(names.map(ingredients(_)))
+    }
 
-    describe("Kebab") {
-
-        it("should tell if it's vegetarian") {
-            oneKebabVegetable.isVegetarian shouldBe true
-            oneKebabViande.isVegetarian shouldBe false
-            oneKebabPoisson.isVegetarian shouldBe false
-        }
-
-        it("should tell if it's pescetarian") {
-            oneKebabVegetable.isPescetarian shouldBe true
-            oneKebabViande.isPescetarian shouldBe false
-            oneKebabPoisson.isPescetarian shouldBe true
-        }
-
-        it("should remove onions") {
-            oneKebabViande.removeOnions shouldEqual Kebab(List(
-                ingredients("salade"),
-                ingredients("tomate"),
-                ingredients("viande")
-            ))
-            oneKebabVegetable.removeOnions shouldEqual Kebab(List(
-                ingredients("salade"),
-                ingredients("cheese"),
-                ingredients("tomate")
-            ))
-            oneKebabPoisson.removeOnions shouldEqual Kebab(List(
-                ingredients("salade"),
-                ingredients("cheese"),
-                ingredients("tomate"),
-                ingredients("cheese"),
-                ingredients("poisson"),
-                ingredients("poisson")
-            ))
-        }
-
-
-        it("should double cheese") {
-            oneKebabViande.doubleCheese shouldEqual oneKebabViande
-            oneKebabVegetable.doubleCheese shouldEqual Kebab(List(
-                ingredients("salade"),
-                ingredients("cheese"),
-                ingredients("cheese"),
-                ingredients("tomate"),
-                ingredients("ognon")
-            ))
-            oneKebabPoisson.doubleCheese shouldEqual Kebab(List(
-                ingredients("salade"),
-                ingredients("cheese"),
-                ingredients("cheese"),
-                ingredients("tomate"),
-                ingredients("ognon"),
-                ingredients("cheese"),
-                ingredients("cheese"),
-                ingredients("poisson"),
-                ingredients("poisson")
-            ))
+    // Build a composite kebab from a list of ingredients
+    private def getCompositeKebab(names: List[String]): CompositeKebab = {
+        if (names.isEmpty) {
+            EmptyIngredient
+        } else {
+            val head :: rest = names
+            compositeIngredients(head).copy(next = getCompositeKebab(rest))
         }
     }
+
+    def test(name: String, getKebab: List[String] => Kebab) = {
+        describe(name) {
+
+            it("should tell if it's vegetarian") {
+                getKebab(List(
+                    "salade",
+                    "cheese",
+                    "tomate",
+                    "ognon"
+                )).isVegetarian shouldBe true
+                getKebab(List(
+                    "salade",
+                    "ognon",
+                    "tomate",
+                    "ognon",
+                    "viande"
+                )).isVegetarian shouldBe false
+                getKebab(List(
+                    "salade",
+                    "cheese",
+                    "tomate",
+                    "ognon",
+                    "cheese",
+                    "poisson",
+                    "poisson"
+                )).isVegetarian shouldBe false
+            }
+
+            it("should tell if it's pescetarian") {
+                getKebab(List(
+                    "salade",
+                    "cheese",
+                    "tomate",
+                    "ognon"
+                )).isPescetarian shouldBe true
+                getKebab(List(
+                    "salade",
+                    "ognon",
+                    "tomate",
+                    "ognon",
+                    "viande"
+                )).isPescetarian shouldBe false
+                getKebab(List(
+                    "salade",
+                    "cheese",
+                    "tomate",
+                    "ognon",
+                    "cheese",
+                    "poisson",
+                    "poisson"
+                )).isPescetarian shouldBe true
+            }
+
+            it("should remove onions") {
+                getKebab(List(
+                    "salade",
+                    "ognon",
+                    "tomate",
+                    "ognon",
+                    "viande"
+                )).removeOnions shouldEqual getKebab(List(
+                    "salade",
+                    "tomate",
+                    "viande"
+                ))
+                getKebab(List(
+                    "salade",
+                    "cheese",
+                    "tomate",
+                    "ognon"
+                )).removeOnions shouldEqual getKebab(List(
+                    "salade",
+                    "cheese",
+                    "tomate"
+                ))
+                getKebab(List(
+                    "salade",
+                    "cheese",
+                    "tomate",
+                    "ognon",
+                    "cheese",
+                    "poisson",
+                    "poisson"
+                )).removeOnions shouldEqual getKebab(List(
+                    "salade",
+                    "cheese",
+                    "tomate",
+                    "cheese",
+                    "poisson",
+                    "poisson"
+                ))
+            }
+
+            it("should double cheese") {
+                getKebab(List(
+                    "salade",
+                    "ognon",
+                    "tomate",
+                    "ognon",
+                    "viande"
+                )).doubleCheese shouldEqual getKebab(List(
+                    "salade",
+                    "ognon",
+                    "tomate",
+                    "ognon",
+                    "viande"
+                ))
+                getKebab(List(
+                    "salade",
+                    "cheese",
+                    "tomate",
+                    "ognon"
+                )).doubleCheese shouldEqual getKebab(List(
+                    "salade",
+                    "cheese",
+                    "cheese",
+                    "tomate",
+                    "ognon"
+                ))
+                getKebab(List(
+                    "salade",
+                    "cheese",
+                    "tomate",
+                    "ognon",
+                    "cheese",
+                    "poisson",
+                    "poisson"
+                )).doubleCheese shouldEqual getKebab(List(
+                    "salade",
+                    "cheese",
+                    "cheese",
+                    "tomate",
+                    "ognon",
+                    "cheese",
+                    "cheese",
+                    "poisson",
+                    "poisson"
+                ))
+            }
+        }
+    }
+
+    test("kebab", getKebab)
 
     describe("CompositeKebab") {
         it("should be similar to kebab") {
-            oneKebabViande2.toString shouldEqual oneKebabViande.toString
+            getCompositeKebab(List(
+                "salade",
+                "ognon",
+                "tomate",
+                "ognon",
+                "viande"
+            )).toString shouldEqual getKebab(List(
+                "salade",
+                "ognon",
+                "tomate",
+                "ognon",
+                "viande"
+            )).toString
         }
     }
+
+    test("composite kebab", getCompositeKebab)
 }

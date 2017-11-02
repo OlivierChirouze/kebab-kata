@@ -5,6 +5,13 @@ import scala.collection.mutable.ListBuffer
 
 object Application {
 
+    trait Kebab {
+        def isVegetarian: Boolean
+        def isPescetarian: Boolean
+        def removeOnions():Kebab
+        def doubleCheese():Kebab
+
+    }
 
     val ognonName = "ognon"
 
@@ -22,15 +29,13 @@ object Application {
         val isPescetarian: Boolean = !hasMeat
     }
 
-    case class Kebab(ingredients: List[Ingredient]) {
+    case class InheritenceKebab(ingredients: List[Ingredient]) extends Kebab {
         val isVegetarian: Boolean = ingredients.forall(_.isVegeratian)
         val isPescetarian: Boolean = ingredients.forall(_.isPescetarian)
 
-        override def toString: String = ingredients.map(_.name).mkString(", ")
+        def removeOnions(): Kebab = InheritenceKebab(ingredients.filterNot(_.name == ognonName))
 
-        def removeOnions() = Kebab(ingredients.filterNot(_.name == ognonName))
-
-        def doubleCheese: Kebab = {
+        def doubleCheese: InheritenceKebab = {
             var ingredientsNew: ListBuffer[Ingredient] = new ListBuffer[Ingredient]()
             ingredients.foreach {
                 ingredient => {
@@ -40,24 +45,39 @@ object Application {
 
                 }
             }
-            Kebab(ingredientsNew.toList)
+            InheritenceKebab(ingredientsNew.toList)
         }
+
+        def ingredientsList: List[String] = ingredients.map(_.name)
+
+        override def toString: String = ingredientsList.mkString(", ")
     }
 
     // ------------------------------------------------------------------- Composite pattern version
-    class CompositeKebab(name: String, next: CompositeKebab) {
+    class CompositeKebab(name: String, next: CompositeKebab) extends Kebab {
         def isVegetarian: Boolean = next.isVegetarian
+
         def isPescetarian: Boolean = next.isPescetarian
 
+        def ingredientsList: List[String] = name :: next.ingredientsList
+
         override def toString: String = {
-            val nextString = next.toString
-            // Implode with "," until empty
-            name + (
-                nextString match {
-                    case empty if nextString.isEmpty => empty
-                    case _ => ", " + nextString
-                })
+            //            val nextString = next.toString
+            //            // Implode with "," until empty
+            //            name + (
+            //                nextString match {
+            //                    case empty if nextString.isEmpty => empty
+            //                    case _ => ", " + nextString
+            //                })
+
+            ingredientsList.mkString(", ")
         }
+
+        def copy(name: String = name, next: CompositeKebab = next) = CompositeKebab(name, next)
+
+        override def removeOnions(): Kebab = ???
+
+        override def doubleCheese(): Kebab = ???
     }
 
     object CompositeKebab {
@@ -66,6 +86,7 @@ object Application {
 
     case class MeatIngredient(name: String, next: CompositeKebab) extends CompositeKebab(name: String, next: CompositeKebab) {
         override def isVegetarian: Boolean = false
+
         override def isPescetarian: Boolean = false
     }
 
@@ -76,7 +97,12 @@ object Application {
     // Null object
     object EmptyIngredient extends CompositeKebab(name = null, next = null) {
         override def isVegetarian: Boolean = true
+
         override def isPescetarian: Boolean = true
+
         override def toString: String = ""
+
+        override def ingredientsList: List[String] = Nil
     }
+
 }
