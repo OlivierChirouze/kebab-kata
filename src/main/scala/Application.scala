@@ -86,16 +86,18 @@ object Application {
 
     case class MeatIngredient(name: String, next: CompositeKebab) extends CompositeKebab(name: String, next: CompositeKebab) {
         override def isVegetarian: Boolean = false
-
         override def isPescetarian: Boolean = false
+        override def copy(name: String = name, next: CompositeKebab = next) = MeatIngredient(name, next)
     }
 
     case class FishIngredient(name: String, next: CompositeKebab) extends CompositeKebab(name: String, next: CompositeKebab) {
         override def isVegetarian: Boolean = false
+        override def copy(name: String = name, next: CompositeKebab = next) = FishIngredient(name, next)
     }
 
     // Null object
-    object EmptyIngredient extends CompositeKebab(name = null, next = null) {
+    // TODO should probably use None for next
+    object EmptyIngredient extends CompositeKebab(name = "empty", next = null) {
         override def isVegetarian: Boolean = true
 
         override def isPescetarian: Boolean = true
