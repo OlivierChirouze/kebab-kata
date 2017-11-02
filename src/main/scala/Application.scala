@@ -13,15 +13,7 @@ object Application {
 
     }
 
-    val ognonName = "ognon"
-
-    var ingredients: List[Ingredient] = List()
-
-    trait IngredientTrait {
-        val name: String
-    }
-
-    case class Ingredient(override val name: String, hasMeat: Boolean = false, hasFish: Boolean = false) extends IngredientTrait {
+    case class Ingredient(name: String, hasMeat: Boolean = false, hasFish: Boolean = false, isOnion: Boolean = false, isCheese: Boolean = false) {
 
         override def toString: String = name
 
@@ -33,14 +25,14 @@ object Application {
         val isVegetarian: Boolean = ingredients.forall(_.isVegeratian)
         val isPescetarian: Boolean = ingredients.forall(_.isPescetarian)
 
-        def removeOnions(): Kebab = InheritenceKebab(ingredients.filterNot(_.name == ognonName))
+        def removeOnions(): Kebab = InheritenceKebab(ingredients.filterNot(_.isOnion))
 
         def doubleCheese: InheritenceKebab = {
             var ingredientsNew: ListBuffer[Ingredient] = new ListBuffer[Ingredient]()
             ingredients.foreach {
                 ingredient => {
                     ingredientsNew += ingredient
-                    if (ingredient.name == "cheese")
+                    if (ingredient.isCheese)
                         ingredientsNew += ingredient.copy()
 
                 }

@@ -8,8 +8,8 @@ class ApplicationSpec extends FunSpec with Matchers {
     var ingredients: mutable.HashMap[String, Ingredient] = mutable.HashMap(
         "tomate" -> Ingredient("tomate"),
         "salade" -> Ingredient("salade"),
-        "ognon" -> Ingredient("ognon"),
-        "cheese" -> Ingredient("cheese"),
+        "oignon" -> Ingredient("oignon", isOnion = true),
+        "cheese" -> Ingredient("cheese", isCheese = true),
         "viande" -> Ingredient("viande", hasMeat = true),
         "poisson" -> Ingredient("poisson", hasFish = true)
     )
@@ -18,7 +18,7 @@ class ApplicationSpec extends FunSpec with Matchers {
     var compositeIngredients: mutable.HashMap[String, CompositeKebab] = mutable.HashMap(
         "tomate" -> CompositeKebab("tomate", EmptyIngredient),
         "salade" -> CompositeKebab("salade", EmptyIngredient),
-        "ognon" -> CompositeKebab("ognon", EmptyIngredient),
+        "oignon" -> CompositeKebab("oignon", EmptyIngredient),
         "cheese" -> CompositeKebab("cheese", EmptyIngredient),
         "viande" -> MeatIngredient("viande", EmptyIngredient),
         "poisson" -> FishIngredient("poisson", EmptyIngredient)
@@ -47,20 +47,20 @@ class ApplicationSpec extends FunSpec with Matchers {
                     "salade",
                     "cheese",
                     "tomate",
-                    "ognon"
+                    "oignon"
                 )).isVegetarian shouldBe true
                 getKebab(List(
                     "salade",
-                    "ognon",
+                    "oignon",
                     "tomate",
-                    "ognon",
+                    "oignon",
                     "viande"
                 )).isVegetarian shouldBe false
                 getKebab(List(
                     "salade",
                     "cheese",
                     "tomate",
-                    "ognon",
+                    "oignon",
                     "cheese",
                     "poisson",
                     "poisson"
@@ -72,20 +72,20 @@ class ApplicationSpec extends FunSpec with Matchers {
                     "salade",
                     "cheese",
                     "tomate",
-                    "ognon"
+                    "oignon"
                 )).isPescetarian shouldBe true
                 getKebab(List(
                     "salade",
-                    "ognon",
+                    "oignon",
                     "tomate",
-                    "ognon",
+                    "oignon",
                     "viande"
                 )).isPescetarian shouldBe false
                 getKebab(List(
                     "salade",
                     "cheese",
                     "tomate",
-                    "ognon",
+                    "oignon",
                     "cheese",
                     "poisson",
                     "poisson"
@@ -95,9 +95,9 @@ class ApplicationSpec extends FunSpec with Matchers {
             it("should remove onions") {
                 getKebab(List(
                     "salade",
-                    "ognon",
+                    "oignon",
                     "tomate",
-                    "ognon",
+                    "oignon",
                     "viande"
                 )).removeOnions shouldEqual getKebab(List(
                     "salade",
@@ -108,7 +108,7 @@ class ApplicationSpec extends FunSpec with Matchers {
                     "salade",
                     "cheese",
                     "tomate",
-                    "ognon"
+                    "oignon"
                 )).removeOnions shouldEqual getKebab(List(
                     "salade",
                     "cheese",
@@ -118,7 +118,7 @@ class ApplicationSpec extends FunSpec with Matchers {
                     "salade",
                     "cheese",
                     "tomate",
-                    "ognon",
+                    "oignon",
                     "cheese",
                     "poisson",
                     "poisson"
@@ -135,34 +135,34 @@ class ApplicationSpec extends FunSpec with Matchers {
             it("should double cheese") {
                 getKebab(List(
                     "salade",
-                    "ognon",
+                    "oignon",
                     "tomate",
-                    "ognon",
+                    "oignon",
                     "viande"
                 )).doubleCheese shouldEqual getKebab(List(
                     "salade",
-                    "ognon",
+                    "oignon",
                     "tomate",
-                    "ognon",
+                    "oignon",
                     "viande"
                 ))
                 getKebab(List(
                     "salade",
                     "cheese",
                     "tomate",
-                    "ognon"
+                    "oignon"
                 )).doubleCheese shouldEqual getKebab(List(
                     "salade",
                     "cheese",
                     "cheese",
                     "tomate",
-                    "ognon"
+                    "oignon"
                 ))
                 getKebab(List(
                     "salade",
                     "cheese",
                     "tomate",
-                    "ognon",
+                    "oignon",
                     "cheese",
                     "poisson",
                     "poisson"
@@ -171,7 +171,7 @@ class ApplicationSpec extends FunSpec with Matchers {
                     "cheese",
                     "cheese",
                     "tomate",
-                    "ognon",
+                    "oignon",
                     "cheese",
                     "cheese",
                     "poisson",
@@ -187,15 +187,15 @@ class ApplicationSpec extends FunSpec with Matchers {
         it("should be similar to kebab") {
             getCompositeKebab(List(
                 "salade",
-                "ognon",
+                "oignon",
                 "tomate",
-                "ognon",
+                "oignon",
                 "viande"
             )).toString shouldEqual getKebab(List(
                 "salade",
-                "ognon",
+                "oignon",
                 "tomate",
-                "ognon",
+                "oignon",
                 "viande"
             )).toString
         }
