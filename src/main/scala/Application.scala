@@ -1,5 +1,6 @@
 import java.lang.reflect.Field
 
+import scala.annotation.tailrec
 import scala.collection.immutable.Stream.Empty
 import scala.collection.mutable.ListBuffer
 
@@ -27,22 +28,27 @@ object Application {
 
         def removeOnions(): Kebab = InheritenceKebab(ingredients.filterNot(_.isOnion))
 
-        def doubleCheese: InheritenceKebab = {
-            var ingredientsNew: ListBuffer[Ingredient] = new ListBuffer[Ingredient]()
-            ingredients.foreach {
-                ingredient => {
-                    ingredientsNew += ingredient
-                    if (ingredient.isCheese)
-                        ingredientsNew += ingredient.copy()
 
-                }
-            }
-            InheritenceKebab(ingredientsNew.toList)
+        def doubleCheese: InheritenceKebab = {
+            InheritenceKebab(InheritenceKebab.addCheese(ingredients,Nil))
         }
 
         def ingredientsList: List[String] = ingredients.map(_.name)
 
         override def toString: String = ingredientsList.mkString(", ")
+    }
+
+    object InheritenceKebab {
+        @tailrec
+        private def addCheese(ingredients: List[Ingredient], acc: List[Ingredient]): List[Ingredient] = ingredients match {
+            case Nil => acc.reverse
+            case head :: tail =>
+                if (head.name == "cheese")
+                    addCheese(tail, head :: head.copy() :: acc)
+                else
+                    addCheese(tail, head :: acc)
+        }
+
     }
 
     // ------------------------------------------------------------------- Composite pattern version
