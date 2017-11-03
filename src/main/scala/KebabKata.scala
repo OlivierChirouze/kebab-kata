@@ -1,20 +1,36 @@
-import java.lang.reflect.Field
-
 import scala.annotation.tailrec
-import scala.collection.immutable.Stream.Empty
-import scala.collection.mutable.ListBuffer
 
-object Application {
+object KebabKata {
 
     trait Kebab {
+        /**
+          * Is this kebab completely vegetarian? (only vegetables, eggs, etc)
+          * @return
+          */
         def isVegetarian: Boolean
 
+        /**
+          * Is this kebab pescetarian? (vegetarian or fish)
+          * @return
+          */
         def isPescetarian: Boolean
 
+        /**
+          * Remove any onions from this kebab
+          * @return
+          */
         def removeOnions(): Kebab
 
+        /**
+          * "duplicate" all cheese ingredients
+          * @return
+          */
         def doubleCheese(): Kebab
 
+        /**
+          * Get the list of ingredient names
+          * @return
+          */
         def ingredientsList: List[String]
     }
 
@@ -26,15 +42,14 @@ object Application {
         val isPescetarian: Boolean = !hasMeat
     }
 
-    case class InheritenceKebab(ingredients: List[Ingredient]) extends Kebab {
+    case class TraditionalKebab(ingredients: List[Ingredient]) extends Kebab {
         val isVegetarian: Boolean = ingredients.forall(_.isVegeratian)
         val isPescetarian: Boolean = ingredients.forall(_.isPescetarian)
 
-        def removeOnions(): Kebab = InheritenceKebab(ingredients.filterNot(_.isOnion))
+        def removeOnions(): Kebab = TraditionalKebab(ingredients.filterNot(_.isOnion))
 
-
-        def doubleCheese: InheritenceKebab = {
-            InheritenceKebab(InheritenceKebab.addCheese(ingredients, Nil))
+        def doubleCheese(): TraditionalKebab = {
+            TraditionalKebab(TraditionalKebab.addCheese(ingredients, Nil))
         }
 
         def ingredientsList: List[String] = ingredients.map(_.name)
@@ -42,7 +57,7 @@ object Application {
         override def toString: String = ingredientsList.mkString(", ")
     }
 
-    object InheritenceKebab {
+    object TraditionalKebab {
         @tailrec
         private def addCheese(ingredients: List[Ingredient], acc: List[Ingredient]): List[Ingredient] = ingredients match {
             case Nil => acc.reverse
@@ -56,6 +71,7 @@ object Application {
     }
 
     // ------------------------------------------------------------------- Composite pattern version
+    // TODO should probably use Some(CompositeKebab) for next
     class CompositeKebab(name: String, next: CompositeKebab) extends Kebab {
         def isVegetarian: Boolean = next.isVegetarian
 
@@ -63,41 +79,37 @@ object Application {
 
         def ingredientsList: List[String] = name :: next.ingredientsList
 
-        override def toString: String = {
-            //            val nextString = next.toString
-            //            // Implode with "," until empty
-            //            name + (
-            //                nextString match {
-            //                    case empty if nextString.isEmpty => empty
-            //                    case _ => ", " + nextString
-            //                })
-
-            ingredientsList.mkString(", ")
-        }
+        override def toString: String = ingredientsList.mkString(", ")
 
         def copy(name: String = name, next: CompositeKebab = next) = CompositeKebab(name, next)
 
-        def removeOnions(): CompositeKebab = ???
+        def removeOnions(): CompositeKebab = copy(name, next.removeOnions())
 
         def doubleCheese(): CompositeKebab = copy(name, next.doubleCheese())
+
+        // Consider two kebabs are the same if their ingredients have the same names in the same order
+        override def equals(obj: scala.Any): Boolean = obj match {
+            case kebab if obj.isInstanceOf[CompositeKebab] => obj.asInstanceOf[CompositeKebab].ingredientsList == ingredientsList
+            case _ => super.equals(obj)
+        }
     }
 
     object CompositeKebab {
         def apply(name: String, next: CompositeKebab): CompositeKebab = new CompositeKebab(name, next)
     }
 
-    //    case class OnionIngredient(name: String, next: CompositeKebab) extends CompositeKebab(name: String, next: CompositeKebab) {
-    //        override def copy(name: String = name, next: CompositeKebab = next) = OnionIngredient(name, next)
-    //
-    //        override def removeOnions(): Kebab = super.removeOnions()
-    //    }
-
     case class CheeseIngredient(name: String, next: CompositeKebab) extends CompositeKebab(name: String, next: CompositeKebab) {
         override def copy(name: String = name, next: CompositeKebab = next) = CheeseIngredient(name, next)
 
-        override def doubleCheese(): CompositeKebab = {
-            copy(name, super.doubleCheese())
-        }
+        // Need to duplicate this very ingredient => let's copy itself
+        override def doubleCheese(): CompositeKebab = copy(name, super.doubleCheese())
+    }
+
+    case class OnionIngredient(name: String, next: CompositeKebab) extends CompositeKebab(name: String, next: CompositeKebab) {
+        override def copy(name: String = name, next: CompositeKebab = next) = OnionIngredient(name, next)
+
+        // Want to remove this very ingredient ==> let's replace it by next
+        override def removeOnions(): CompositeKebab = next.removeOnions()
     }
 
     case class MeatIngredient(name: String, next: CompositeKebab) extends CompositeKebab(name: String, next: CompositeKebab) {
@@ -126,6 +138,8 @@ object Application {
         override def ingredientsList: List[String] = Nil
 
         override def doubleCheese(): CompositeKebab = this
+
+        override def removeOnions(): CompositeKebab = this
     }
 
 }

@@ -1,9 +1,9 @@
-import Application.{EmptyIngredient, _}
+import KebabKata.{EmptyIngredient, _}
 import org.scalatest._
 
 import scala.collection.mutable
 
-class ApplicationSpec extends FunSpec with Matchers {
+class KebabKataSpec extends FunSpec with Matchers {
 
     var ingredients: mutable.HashMap[String, Ingredient] = mutable.HashMap(
         "tomate" -> Ingredient("tomate"),
@@ -18,18 +18,18 @@ class ApplicationSpec extends FunSpec with Matchers {
     var compositeIngredients: mutable.HashMap[String, CompositeKebab] = mutable.HashMap(
         "tomate" -> CompositeKebab("tomate", EmptyIngredient),
         "salade" -> CompositeKebab("salade", EmptyIngredient),
-        "oignon" -> CompositeKebab("oignon", EmptyIngredient),
+        "oignon" -> OnionIngredient("oignon", EmptyIngredient),
         "cheese" -> CheeseIngredient("cheese", EmptyIngredient),
         "viande" -> MeatIngredient("viande", EmptyIngredient),
         "poisson" -> FishIngredient("poisson", EmptyIngredient)
     )
 
-    // Build a kebab from the names of the ingredients
-    private def getKebab(names: List[String]): InheritenceKebab = {
-        InheritenceKebab(names.map(ingredients(_)))
+    // Build a kebab from a flat list of the names of ingredients
+    private def getTraditionalKebab(names: List[String]): TraditionalKebab = {
+        TraditionalKebab(names.map(ingredients(_)))
     }
 
-    // Build a composite kebab from a list of ingredients
+    // Build a composite kebab from a flat list of the names of ingredients
     private def getCompositeKebab(names: List[String]): CompositeKebab = {
         if (names.isEmpty) {
             EmptyIngredient
@@ -39,7 +39,26 @@ class ApplicationSpec extends FunSpec with Matchers {
         }
     }
 
-    def test(name: String, getKebab: List[String] => Kebab) = {
+    describe("Two types") {
+        it("should be similar") {
+            getCompositeKebab(List(
+                "salade",
+                "oignon",
+                "tomate",
+                "oignon",
+                "viande"
+            )).toString shouldEqual getTraditionalKebab(List(
+                "salade",
+                "oignon",
+                "tomate",
+                "oignon",
+                "viande"
+            )).toString
+        }
+    }
+
+    // Generic test suite will be ran on two types of kebab
+    def test(name: String, getKebab: List[String] => Kebab): Unit = {
         describe(name) {
 
             it("should tell if it's vegetarian") {
@@ -139,25 +158,25 @@ class ApplicationSpec extends FunSpec with Matchers {
                     "tomate",
                     "oignon",
                     "viande"
-                )).doubleCheese.ingredientsList shouldEqual getKebab(List(
+                )).doubleCheese shouldEqual getKebab(List(
                     "salade",
                     "oignon",
                     "tomate",
                     "oignon",
                     "viande"
-                )).ingredientsList
+                ))
                 getKebab(List(
                     "salade",
                     "cheese",
                     "tomate",
                     "oignon"
-                )).doubleCheese.ingredientsList shouldEqual getKebab(List(
+                )).doubleCheese shouldEqual getKebab(List(
                     "salade",
                     "cheese",
                     "cheese",
                     "tomate",
                     "oignon"
-                )).ingredientsList
+                ))
                 getKebab(List(
                     "salade",
                     "cheese",
@@ -166,7 +185,7 @@ class ApplicationSpec extends FunSpec with Matchers {
                     "cheese",
                     "poisson",
                     "poisson"
-                )).doubleCheese.ingredientsList shouldEqual getKebab(List(
+                )).doubleCheese shouldEqual getKebab(List(
                     "salade",
                     "cheese",
                     "cheese",
@@ -176,30 +195,11 @@ class ApplicationSpec extends FunSpec with Matchers {
                     "cheese",
                     "poisson",
                     "poisson"
-                )).ingredientsList
+                ))
             }
         }
     }
 
-    test("kebab", getKebab)
-
-    describe("CompositeKebab") {
-        it("should be similar to kebab") {
-            getCompositeKebab(List(
-                "salade",
-                "oignon",
-                "tomate",
-                "oignon",
-                "viande"
-            )).toString shouldEqual getKebab(List(
-                "salade",
-                "oignon",
-                "tomate",
-                "oignon",
-                "viande"
-            )).toString
-        }
-    }
-
+    test("traditional kebab", getTraditionalKebab)
     test("composite kebab", getCompositeKebab)
 }
