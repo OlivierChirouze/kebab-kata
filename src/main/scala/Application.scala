@@ -1,6 +1,3 @@
-import java.lang.reflect.Field
-
-import scala.collection.immutable.Stream.Empty
 import scala.collection.mutable.ListBuffer
 
 object Application {
@@ -10,7 +7,7 @@ object Application {
         def isPescetarian: Boolean
         def removeOnions():Kebab
         def doubleCheese():Kebab
-
+        def ingredientsList: List[String]
     }
 
     case class Ingredient(name: String, hasMeat: Boolean = false, hasFish: Boolean = false, isOnion: Boolean = false, isCheese: Boolean = false) {
@@ -67,14 +64,26 @@ object Application {
 
         def copy(name: String = name, next: CompositeKebab = next) = CompositeKebab(name, next)
 
-        override def removeOnions(): Kebab = ???
+        def removeOnions(): CompositeKebab = ???
 
-        override def doubleCheese(): Kebab = ???
+        def doubleCheese(): CompositeKebab = copy(name, next.doubleCheese())
     }
 
     object CompositeKebab {
         def apply(name: String, next: CompositeKebab): CompositeKebab = new CompositeKebab(name, next)
     }
+
+//    case class OnionIngredient(name: String, next: CompositeKebab) extends CompositeKebab(name: String, next: CompositeKebab) {
+//        override def copy(name: String = name, next: CompositeKebab = next) = OnionIngredient(name, next)
+//
+//        override def removeOnions(): Kebab = super.removeOnions()
+//    }
+
+        case class CheeseIngredient(name: String, next: CompositeKebab) extends CompositeKebab(name: String, next: CompositeKebab) {
+            override def copy(name: String = name, next: CompositeKebab = next) = CheeseIngredient(name, next)
+
+            override def doubleCheese(): CompositeKebab = copy(name, doubleCheese())
+        }
 
     case class MeatIngredient(name: String, next: CompositeKebab) extends CompositeKebab(name: String, next: CompositeKebab) {
         override def isVegetarian: Boolean = false
@@ -97,6 +106,8 @@ object Application {
         override def toString: String = ""
 
         override def ingredientsList: List[String] = Nil
+
+        override def doubleCheese(): CompositeKebab = this
     }
 
 }

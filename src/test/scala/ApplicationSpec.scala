@@ -19,7 +19,7 @@ class ApplicationSpec extends FunSpec with Matchers {
         "tomate" -> CompositeKebab("tomate", EmptyIngredient),
         "salade" -> CompositeKebab("salade", EmptyIngredient),
         "oignon" -> CompositeKebab("oignon", EmptyIngredient),
-        "cheese" -> CompositeKebab("cheese", EmptyIngredient),
+        "cheese" -> CheeseIngredient("cheese", EmptyIngredient),
         "viande" -> MeatIngredient("viande", EmptyIngredient),
         "poisson" -> FishIngredient("poisson", EmptyIngredient)
     )
@@ -139,25 +139,25 @@ class ApplicationSpec extends FunSpec with Matchers {
                     "tomate",
                     "oignon",
                     "viande"
-                )).doubleCheese shouldEqual getKebab(List(
+                )).doubleCheese.ingredientsList shouldEqual getKebab(List(
                     "salade",
                     "oignon",
                     "tomate",
                     "oignon",
                     "viande"
-                ))
+                )).ingredientsList
                 getKebab(List(
                     "salade",
                     "cheese",
                     "tomate",
                     "oignon"
-                )).doubleCheese shouldEqual getKebab(List(
+                )).doubleCheese.ingredientsList shouldEqual getKebab(List(
                     "salade",
                     "cheese",
                     "cheese",
                     "tomate",
                     "oignon"
-                ))
+                )).ingredientsList
                 getKebab(List(
                     "salade",
                     "cheese",
@@ -166,7 +166,7 @@ class ApplicationSpec extends FunSpec with Matchers {
                     "cheese",
                     "poisson",
                     "poisson"
-                )).doubleCheese shouldEqual getKebab(List(
+                )).doubleCheese.ingredientsList shouldEqual getKebab(List(
                     "salade",
                     "cheese",
                     "cheese",
@@ -176,7 +176,7 @@ class ApplicationSpec extends FunSpec with Matchers {
                     "cheese",
                     "poisson",
                     "poisson"
-                ))
+                )).ingredientsList
             }
         }
     }
