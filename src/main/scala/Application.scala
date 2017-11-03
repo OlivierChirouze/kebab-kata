@@ -8,9 +8,13 @@ object Application {
 
     trait Kebab {
         def isVegetarian: Boolean
+
         def isPescetarian: Boolean
-        def removeOnions():Kebab
-        def doubleCheese():Kebab
+
+        def removeOnions(): Kebab
+
+        def doubleCheese(): Kebab
+
         def ingredientsList: List[String]
     }
 
@@ -28,8 +32,9 @@ object Application {
 
         def removeOnions(): Kebab = InheritenceKebab(ingredients.filterNot(_.isOnion))
 
+
         def doubleCheese: InheritenceKebab = {
-            InheritenceKebab(InheritenceKebab.addCheese(ingredients,Nil))
+            InheritenceKebab(InheritenceKebab.addCheese(ingredients, Nil))
         }
 
         def ingredientsList: List[String] = ingredients.map(_.name)
@@ -42,7 +47,7 @@ object Application {
         private def addCheese(ingredients: List[Ingredient], acc: List[Ingredient]): List[Ingredient] = ingredients match {
             case Nil => acc.reverse
             case head :: tail =>
-                if (head.name == "cheese")
+                if (head.isCheese)
                     addCheese(tail, head :: head.copy() :: acc)
                 else
                     addCheese(tail, head :: acc)
@@ -81,26 +86,31 @@ object Application {
         def apply(name: String, next: CompositeKebab): CompositeKebab = new CompositeKebab(name, next)
     }
 
-//    case class OnionIngredient(name: String, next: CompositeKebab) extends CompositeKebab(name: String, next: CompositeKebab) {
-//        override def copy(name: String = name, next: CompositeKebab = next) = OnionIngredient(name, next)
-//
-//        override def removeOnions(): Kebab = super.removeOnions()
-//    }
+    //    case class OnionIngredient(name: String, next: CompositeKebab) extends CompositeKebab(name: String, next: CompositeKebab) {
+    //        override def copy(name: String = name, next: CompositeKebab = next) = OnionIngredient(name, next)
+    //
+    //        override def removeOnions(): Kebab = super.removeOnions()
+    //    }
 
-        case class CheeseIngredient(name: String, next: CompositeKebab) extends CompositeKebab(name: String, next: CompositeKebab) {
-            override def copy(name: String = name, next: CompositeKebab = next) = CheeseIngredient(name, next)
+    case class CheeseIngredient(name: String, next: CompositeKebab) extends CompositeKebab(name: String, next: CompositeKebab) {
+        override def copy(name: String = name, next: CompositeKebab = next) = CheeseIngredient(name, next)
 
-            override def doubleCheese(): CompositeKebab = copy(name, doubleCheese())
+        override def doubleCheese(): CompositeKebab = {
+            copy(name, super.doubleCheese())
         }
+    }
 
     case class MeatIngredient(name: String, next: CompositeKebab) extends CompositeKebab(name: String, next: CompositeKebab) {
         override def isVegetarian: Boolean = false
+
         override def isPescetarian: Boolean = false
+
         override def copy(name: String = name, next: CompositeKebab = next) = MeatIngredient(name, next)
     }
 
     case class FishIngredient(name: String, next: CompositeKebab) extends CompositeKebab(name: String, next: CompositeKebab) {
         override def isVegetarian: Boolean = false
+
         override def copy(name: String = name, next: CompositeKebab = next) = FishIngredient(name, next)
     }
 
